@@ -1,0 +1,9 @@
+使用slf4j+logback进行日志管理。
+1.spring boot2.0下，日志配置
+logging:
+  level:
+    com.murphy.modulemybatis.service: [info] #指定包下使用指定的日志级别
+  file:
+    #path: E:\Murphy-coder\log\module-mybatis
+    name: E:\Murphy-coder\log\module-mybatis\module-mybatis.log #指定日志的保存目录和日志名称，如果name和path属性同时启用时，name有效
+    max-size: 10MB #指定单个日志文件的最大尺寸

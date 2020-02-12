@@ -1,0 +1,12 @@
+1.异常信息：java.lang.InterruptedException: sleep interrupted
+    **异常描述：（主要针对spring boot线程池的多线程并发）
+    使用线程池进行异步执行任务，子线程内部有Thread.sleep(10000)进入睡眠状态10s，但是主线程已经结束shutdown()，使得主线程强行打断
+    了子线程的sleep状态，因此抛出异常。
+    注：用spring boot的ApplicationTests和psvm进行测试会报错（即使用main、id为1的线程会发生错误），但是如果用Web接口执行不会报错！！！！！！！！！！（）
+
+    **解决方案：
+    不是错误，需要注意线程池的使用环境。
+
+    注：如果使用jdk线程池进行异步任务，没有异常但是也不会执行任务。
+
+2.

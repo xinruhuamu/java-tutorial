@@ -1,0 +1,10 @@
+Set不允许出现重复元素的集合类型。
+1.HashSet
+通过HashMap实现，Value固定为静态对象，使用Key保证集合元素的唯一性，及将Set的V作为HashMap的Key，保证唯一性；但是不保证集合元素的顺序。
+
+2.TreeSet
+Key有序，通过TreeMap实现，底层为红黑树。
+
+3.LinkedHashSet
+继承自HashSet，内部维护双向链表保证元素插入顺序。
+

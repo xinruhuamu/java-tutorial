@@ -1,0 +1,143 @@
+java.lang.reflect 反射
+Member 接口 - 反映关于单个成员(字段或方法)或构造函数的标识信息。
+Field 类 - 提供一个类的域的信息以及访问类的域的接口。
+Method 类 - 提供一个类的方法的信息以及访问类的方法的接口。
+Constructor 类 - 提供一个类的构造函数的信息以及访问类的构造函数的接口。
+Array 类 - 该类提供动态地生成和访问 JAVA 数组的方法。
+Modifier 类 - 提供了 static 方法和常量，对类和成员访问修饰符进行解码。
+Proxy 类 - 提供动态地生成代理类和类实例的静态方法。
+
+**常用Field 类、Method 类、Constructor 类
+**注意Class类中方法对私有属性、私有方法、私有构造方法的支持差异。
+
+反射机制：在运行状态下，对于任意一个类，可以获取这个类的所有属性和方法；对于任意一个对象，可以调用它的任意方法和属性；这种动态获取信息及动态调用对象的功能称为Java的反射机制。
+
+1.Class类对象：
+被反射类对应的Class对象。Java中，类的所有实例化对象都会有一个对应的Class类对象.class 。 Class类对象由jvm生成，可以通过它获取整个类的结构，Class类是反射的基础，java.lang.Class是所有反射API的入口。
+注：一个类有且仅有一个Class类对象。
+    可以通过Class类对象class获取操作类的Field类对象、Method类对象、Constructor 类对象等等。
+
+**获取Class类对象.class的三种方法：
+a.java.lang.Class中的forName静态方法
+使用类的完全限定名来获取类对象，应用场景：JDBC开发加载数据库驱动。
+Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
+
+b.类直接获取类的Class类对象
+Class clazz = HashMap.class
+
+c.实例对象object调用Object的getClass()方法
+GarfieldCat garfieldCat = new GarfieldCat();
+Class clazz = garfieldCat.getClass();
+
+**判断是否为某个类的实例的两种方法：
+a.instanceof关键字
+for(garfieldCat instanceof GarfieldCat){...}
+
+b.Class类对象的isInstance方法（一个Native方法）
+for(GarfieldCat.class.isInstance(garfieldCat)){...}
+
+**通过反射创建类的实例化对象两种方法：
+a.Class类对象的newInstance方法
+GarfieldCat cat = (GarfieldCat)GarfieldCat.class.newInstance();
+
+b.Constructor类对象的newInstance方法
+Constructor constructor = GarfieldCat.class.getConstructor(Class<?>... parameterTypes);//参数的类型
+GarfieldCat cat = (GarfieldCat)constructor.newInstance();
+
+2.Field类对象
+**Class类对象获取Field类对象的方法： //Declared公开的，注意对public和private属性的异同
+a.getField
+获取类中public类成员,可以获取父类的类成员
+b.getDeclaredField
+根据名称获取已声明的类成员，包括私有属性，但无法获得父类的类成员
+c.getFields
+获取所有public类成员（包括类成员常量），数组存储
+d.getDeclaredFields
+获取所有已声明的类成员，包括私有属性，数组存储
+
+
+例子，获取对象的私有类成员，包括类常量
+Field[] fields = clazz.getDeclaredFields(); //获取所有类成员
+fields.setAccessible(True);//解除私有变量访问权限，将对象的私有属性和方法设置为允许访问
+for(String str : fields){//变量获取所有类成员
+    ...//对类成员操作
+        //set(object,newObject);//将实例化对象中的私有类成员变量值替换为新值
+        //.get(obj);根据常量名获取私有常量值
+};
+
+3.Method类对象
+**Class类对象获取Method类对象的方法：//Declared公开的 注意对public和private方法的异同
+a.getMethod(String name, Class<?>... parameterTypes)返回类或者接口的特定公开public方法，name为方法名称，如果方法带参，
+则Class<?>... parameterTypes为方法参数对应的Class类对象；可以获取父类的方法。
+b.getDeclaredMethod(String name, Class<?>... parameterTypes)返回类或者接口的特定方法，包括私有方法;但无法获取父类方法。
+c.getMethods()返回所有类或者接口的特定公开public方法。
+d.getDeclaredMethods()返回所有类或者接口的特定方法,包括私有方法。
+
+例子，获取对象的私有方法。
+//获取私有成员方法
+Method method = clazz.getDeclaredMethod("catchMouse", String.class);
+//解除私有权限
+method.setAccessible(true);
+//执行私有方法，第一个参数为实例化对象，后面参数为方法参数
+System.out.println(method.invoke(garfieldCat, "jerry"));
+
+4.Constructor类对象
+**Class类对象获取Constructor对象的方法： 与Field、Method类似，注意public和private的支持。
+a.getConstructor - 返回类的特定 public 构造方法。参数为方法参数对应 Class 的对象。
+b.getDeclaredConstructor - 返回类的特定构造方法,包括private。参数为方法参数对应 Class 的对象。
+c.getConstructors - 返回类的所有 public 构造方法。
+d.getDeclaredConstructors - 返回类的所有构造方法，包括private。
+
+例子，获取构造方法：
+//获取构造方法
+Constructor constructor = clazz.getConstructor();
+GarfieldCat cat = (GarfieldCat) constructor.newInstance();
+System.out.println(cat.eat());
+
+5.动态代理
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

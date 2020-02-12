@@ -1,0 +1,355 @@
+文档介绍关于mysql单表CURD知识。
+以mysql示例数据库sakila.flim表为例
+EXPLAIN命令，分析SELECT语句。
+EXPLAIN... + SHOW WRANINGS...组合对SELECT语句进行分析。
+记得关闭MYSQL的缓存功能query_cache_type = OFF。
+
+1.C，Create增加，添加
+insert into 表名(列名1,列名2...) value(值1,值2...);
+如果对表中的所有列添加数据，列名可省略，即insert into 表名 values(值1,值2...);
+多列批量添加：
+insert into 表名(列名1,列名2...) values(值1,值2...),(值1,值2...),(值1,值2...)...;
+
+2.U，Update更新，修改
+update 表名 set 列名1=值1,列名2=值2...[where条件(可选)];
+
+3.R，Read读取，查询
+select 列名1,列名2... from 表名; // 基础查询语句 select * from film
+    a.WHERE条件： //行条件，WHERE后可跟条件子句
+        = != > >= < <= <>(不等于) 即条件判断 // SELECT * FROM film WHERE rating = 'PG';
+        BETWEEN...AND  范围查询，即>=且<=  // SELECT * FROM film WHERE rental_duration BETWEEN 3 AND 6;
+        IN(set)        即在set集合内 // SELECT * FROM film WHERE rental_duration IN(4,5,6);
+        IS NULL        即空值 // SELECT * FROM film WHERE rental_duration IS NULL;
+        AND            即且(同时满足条件)  //  SELECT * FROM film WHERE rental_duration = 3 AND rating = 'PG';
+        OR             即或者  // SELECT * FROM film WHERE rental_duration = 3 OR rating = 'PG';
+        NOT            即非  // SELECT * FROM film WHERE NOT rating = 'PG';
+        LIKE           即模糊查询,使用通配符（尽量减少使用LIKE，效率较差）
+            %  //代表任意字符(包括0) // SELECT * FROM film WHERE title LIKE '%A%';
+            _  //与%相似，%可代表多个字符，_只能代表一个任意字符  // SELECT * FROM film WHERE title LIKE '_A%';第二个字符为A
+
+    b.GROUP BY 汇总数据，对结果进行分组：结合函数，根据一个或多个列名对结果集进行分组。
+    语法：SELECT 列名,count(列名) FROM film WHERE...GROUP BY... ;//如果是两个列名分组，先根据第一个列分组，结果集为A，然后再根据第二个列对结果集A进行分组获得结果集B。
+        SELECT rental_duration,count(rental_duration),rating,count(rating) FROM film GROUP BY rental_duration,rating ;
+
+        通常可以在GROUP BY之后添加HAVING +函数，对分组后的结果集B再进行筛选获得结果集C。
+        SELECT rental_duration,count(rental_duration),rating,count(rating) FROM film GROUP BY rental_duration,rating HAVING  ;
+
+    c.ORDER BY...ASC|DESC  根据指定列对结果集进行升序/降序排序
+    语法：SELECT 列名 FROM 表名 WHERE...ORDER BY 列名 ASC|DESC;
+        SELECT * FROM film WHERE rating = 'PG' ORDER BY rental_rate ASC; //
+
+    d.子查询 关键字IN、EXISTS、ANY、ALL
+    语法：SELECT * FROM film WHERE condition OPERATOR(...);
+
+    IN：用于WHERE表达式中。检测结果集中是否存在特定值，如果存在就执行外部查询。
+        语法：SELECT ... FROM table WHERE column IN (subquery)
+        SELECT title,rating,rental_rate FROM film WHERE film_id IN (SELECT film_id FROM film WHERE title LIKE '_A%');
+    EXIST:子查询语句不返回查询结果集，而是一个真假值（true false）。
+        语法：SELECT ... FROM table WHERE  EXISTS (subquery)
+        SELECT title,rating,rental_rate FROM film WHERE EXISTS (SELECT film_id FROM film WHERE rental_rate > 5);
+    ANY：满足子查询任意条件，就可执行外部语句。
+        语法：SELECT ... FROM table WHERE column ANY(subquery)
+    ALL：满足所有结果才可以执行外部语句。
+        语法：SELECT ... FROM table WHERE column ALL(subquery)
+
+    e.组合查询UNION，合并两个或多个查询结果集(UNION必须包含相同的列、表达式、或者聚合函数)
+        语法：SELECT column1, column2 FROM table WHERE...
+                UNION
+              SELECT column1, column2 FROM table WHERE...
+        SELECT film_id,title,rental_duration
+        FROM film WHERE rating = 'NC-17'
+        UNION ALL(UNION ALL会列出两个结果集中的重复值，不会去重复；UNION会自动去重复)
+        SELECT film_id,title,rental_duration
+        FROM film WHERE rental_rate = 4.99;
+
+    f.聚合函数 Aggregate
+        COUNT(expr):会遍历整张表，返回指定列数目，注意值为NULL时不计入。三种COUNT(字段)、COUNT(1)、COUNT(*)比较（再Innodb引擎中的表现）
+            1.COUNT(字段)：如果字段定义为NOT NULL，逐行读取该字段，按行累加；如果字段允许为NULL，逐行读取并判断该字段的值，不为NULL才累加。
+
+            2.COUNT(主键id)：引擎遍历整张表，把每一行id值全部取出，返回给server层，然后server对结果集进行判断，不为NULL的，按行累加。
+
+            3.COUNT(1):引擎遍历整张表，但是不取值（与COUNT(字段)不同），server层对于返回结果集的每一行，放一个数字"1"进去，判断不为NULL的，按行累加。
+
+            4.COUNT(*):遍历整张表，但是不会取出全部字段，不取值，COUNT(*)肯定不为NULL，按行累加。
+
+            结论：效率排序，COUNT(字段)<COUNT(主键id)<COUNT(1)≈COUNT(*)，推荐使用COUNT(*)，官方也是推荐使用COUNT(*).
+
+        AVG(expr):返回平均值。
+
+        SUM(expr):返回和。
+
+        FIRST(expr)：返回结果集的第一个值。
+
+        LAST(expr)：返回结果集的最后一个值。
+
+        MIN(expr):返回结果集的最小值。
+
+        MAX(expr)：返回结果集的最大值。
+
+    g.scalar函数(我了解不多。。。)
+        UCASE(expr):将字段转换为大写格式。
+        LCASE(expr):将字段转换为小写格式。
+        MID(expr):从文本字段提取指定长度字符。MID(column,start[,length])
+        LEN(expr):返回文本字段的长度。
+        ROUND(expr):返回数值字段对指定小数位数的四舍五入的值。ROUND(column,decimals)
+        NOW(expr):返回系统当前日期和时间。
+        FORMAT(expr)：按某种格式格式化字段。
+
+4.D,Delete删除
+    DELETE FROM table_name [WHERE...] 如果不加条件，则删除表中所有数据。
+    如果进行全表数据删除时，可使用TRUNCATE 语句，速度比DELETE快。
+
+5.SQL执行语法顺序
+--查询组合字段
+(5)select (5-2) distinct(5-3) top(<top_specification>)(5-1)<select_list>
+--连表
+(1)from (1-J)<left_table><join_type> join <right_table> on <on_predicate>
+        (1-A)<left_table><apply_type> apply <right_table_expression> as <alias>
+        (1-P)<left_table> pivot (<pivot_specification>) as <alias>
+        (1-U)<left_table> unpivot (<unpivot_specification>) as <alias>
+--查询条件
+(2)where <where_pridicate>
+--分组
+(3)group by <group_by_specification>
+--分组条件
+(4)having<having_predicate>
+--排序
+(6)order by<order_by_list>
+(7)limit <n,m>//MySQL支持limit Oracle sqlserver支持top1
+------------------------------------------------------------------------------------------------------------------------
+        mySql的执行顺序
+        mysql执行sql的顺序从 From 开始，以下是执行的顺序流程
+
+        1、FROM  table1 left join table2 on 将table1和table2中的数据产生笛卡尔积，生成Temp1
+
+        2、JOIN table2  所以先是确定表，再确定关联条件
+
+        3、ON table1.column = table2.column 确定表的绑定条件 由Temp1产生中间表Temp2
+
+        4、WHERE  对中间表Temp2产生的结果进行过滤  产生中间表Temp3
+
+        5、GROUP BY 对中间表Temp3进行分组，产生中间表Temp4
+
+        6、HAVING  对分组后的记录进行聚合 产生中间表Temp5
+
+        7、SELECT  对中间表Temp5进行列筛选，产生中间表 Temp6
+
+        8、DISTINCT 对中间表 Temp6进行去重，产生中间表 Temp7
+
+        9、ORDER BY 对Temp7中的数据进行排序，产生中间表Temp8
+
+        10、LIMIT 对中间表Temp8进行分页，产生中间表Temp9
+------------------------------------------------------------------------------------------------------------------------
+
+6.JavaType和JdbcType对照表
+JDBC Type           Java Type
+------------------------------
+CHAR                String
+VARCHAR             String
+LONGVARCHAR         String
+NUMERIC             java.math.BigDecimal
+DECIMAL             java.math.BigDecimal
+BIT                 boolean
+BOOLEAN             boolean
+TINYINT             byte
+SMALLINT            short
+INTEGER             INTEGER
+BIGINT              long
+REAL                float
+FLOAT               double
+DOUBLE              double
+BINARY              byte[]
+VARBINARY           byte[]
+LONGVARBINARY       byte[]
+DATE                java.sql.Date
+TIME                java.sql.Time
+TIMESTAMP           java.sql.Timestamp
+CLOB                Clob
+BLOB                Blob
+ARRAY               Array
+DISTINCT            mapping of underlying type
+STRUCT              Struct
+REF                 Ref
+DATALINK            java.net.URL[color=red][/color]
+
+7.查询优化器EXPLAIN命令详解  https://juejin.im/post/5d141528e51d4577565367d0  https://segmentfault.com/a/1190000008131735
+示例语句：
+EXPLAIN SELECT * FROM `film` WHERE length <50
+UNION
+SELECT * FROM `film` WHERE length >100
+ORDER BY length;
++------+--------------+------------+------------+------+---------------+------+---------+------+------+----------+---------------------------------+
+| id   | select_type  | table      | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                           |
++------+--------------+------------+------------+------+---------------+------+---------+------+------+----------+---------------------------------+
+|    1 | PRIMARY      | film       | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 1000 |    33.33 | Using where                     |
+|    2 | UNION        | film       | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 1000 |    33.33 | Using where                     |
+| NULL | UNION RESULT | <union1,2> | NULL       | ALL  | NULL          | NULL | NULL    | NULL | NULL | NULL     | Using temporary; Using filesort |
++------+--------------+------------+------------+------+---------------+------+---------+------+------+----------+---------------------------------+
+a.各列的含义
+    id:SELECT查询的标识符，同时表明执行顺序，每个SELECT自动分配一个唯一的标识符，查询序号为sql语句执行顺序。
+    select_type:SELECT查询的类型。
+    table:输出行引用的表。
+    partitions:使用的分区，需要结合表分区才可以看到。
+    type:查询类型，例如按照索引类型查询，按照范围查询；从最好到最差的类型为：const、eq_reg、ref、range、index、all；可以用来判断查询是全表扫描或者
+    索引扫描。
+    possible_keys:此次查询中可能选用的索引，保存索引名称，如果是多个索引，用逗号隔开。
+    key:此次查询中确切使用的索引。
+    key_len:此次查询中，选择的索引长度是多少字节。
+    ref:显示索引的那一列被使用，如果可能，是一个常数。
+    rows:显示mysql认为执行查询时必须返回的行数。
+    filtered:此查询条件下，过滤后的数据占总数据的百分比（指符合查询条件的数据占总书记的百分比）。
+    extra:额外信息，例如：using file sort,using where,using join buffer,using index。
+
+    id:查询序号为sql语句执行顺序，id越大优先级越高。
+    (1).当id相同时，按从上到下的顺序执行。
+    (2).当id不同时，按id从大到小执行。
+    (3).当id部分不同时，先执行id大的，id相同的按从上到下顺序执行。
+
+    select_type:查询类型。
+        SIMPLE:表示此查询不包含UNION查询和子查询。
+        PRIMARY:表示此查询是最外层的查询。
+        UNION:表示此查询是UNION的第二个或随后的查询。
+        DEPENDENT UNION:表示此查询是UNION的第二个或后面的查询语句，取决于外面的查询。
+        UNION RESULT:表示此查询是UNION的结果。
+        SUBQUERY:表示此查询是子查询中的第一个SELECT。
+        DEPENDENT SUBQUERY:子查询中的第一个SELECT,取决于外面的查询;及子查询依赖于外层查询的结果集。
+
+    table:表名，或者表别名和一个临时表的标识符。
+
+    partitions:分区。
+
+    type:查询类型。
+        CONST:表中最多一个匹配行，CONST用于比较primary key或者unique索引。只匹配一行数据，速度最快。
+        EQ_REF:唯一性索引扫描，对于每个来自前面的表的记录，从该表中读取唯一行。
+        REF:非唯一性索引扫描，对于每个来自前面表的记录，从该表中取出所有匹配的行。
+        REF_OR_NULL:类似REF，但是可以搜索包含NULL指的行，例如：SELECT * FROM `film` WHERE length = 100 OR length IS NULL,需要在length建立索引;
+        INDEX_MERGE:查询语句用到了一张表的多个索引时，MYSQL会将多个索引合并到一起。
+        RANGE:按指定范围（如IN、<、>、BETWEEN、AND、OR等，但是前提时此字段要建立索引）检索，很常见。如：SELECT * FROM `film` WHERE film_id < 100 OR film_id IS NULL，film_id上有索引。
+        INDEX:全表扫描（查询的字段需要建立索引），但是是在索引树中扫描，通常比ALL快，因为索引文件通常比数据文件小，INDEX扫描通过二叉树方式扫描，而ALL是扫描物理表,所以INDEX比ALL快。
+        ALL:全表扫描，扫描完整物理表，性能最差需要优化。
+
+    possible_keys:可能用到索引。
+
+    key:实际用到索引。
+
+    key_len:只计算WHERE条件用到的索引长度，排序和分组用到的索引不会被计算到key_len中。
+        key_len计算公式：
+        varchar(10)变长字段且允许NULL    =  10 * ( character set：utf8=3,gbk=2,latin1=1) + 1(NULL) + 2(变长字段)
+        varchar(10)变长字段且不允许NULL =  10 *( character set：utf8=3,gbk=2,latin1=1) + 2(变长字段)
+        char(10)固定字段且允许NULL       =  10 * ( character set：utf8=3,gbk=2,latin1=1)+1(NULL)
+        char(10)固定字段且不允许NULL    =  10 * ( character set：utf8=3,gbk=2,latin1=1)
+
+    ref:显示索引的那一列被使用，可能是常数。
+
+    rows:显示MYSQL认为执行查询时必须返回的行数，可结合type和key分析，没有用索引的情况下，会全表扫描。rows的值越小越好。
+
+    filtered:百分比值，结合rows的值，估算出那些将要和执行计划中的前一个表（前一个表指id列值比当前表id小的表）进行连接的行数目。
+
+    extra:额外信息。
+        Using filesort：
+        当 Extra 中有 Using filesort 时, 表示 MySQL 需额外的排序操作, 不能通过索引顺序达到排序效果. 一般有 Using filesort, 都建议优化去掉, 因为这样的查询 CPU 资源消耗大.
+        Using index
+        "覆盖索引扫描", 表示查询在索引树中就可查找所需数据, 不用扫描表数据文件, 往往说明性能不错
+        Using temporary
+        查询有使用临时表, 一般出现于排序, 分组和多表 join 的情况, 查询效率不高, 建议优化.
+
+8.索引
+
+9.Mysql时间戳和时间的获取/转换/格式化
+获取当前时间戳：SELECT UNIX_TIMESTAMP(); 或者SELECT UNIX_TIMESTAMP(NOW());
+
+获取当前时间：SELECT NOW();
+
+时间转时间戳：SELECT UNIX_TIMESTAMP('2018-01-15 09:45:16');
+
+时间戳转时间：SELECT FROM_UNIXTIME(1515980716);
+
+时间戳格式化：SELECT FROM_UNIXTIME(1515980716,'%Y-%m-%d %H:%i:%S');
+
+时间格式化：SELECT DATE_FORMAT(NOW(),'%Y-%m-%d %H:%i:%S');
+           SELECT DATE_FORMAT('2018-01-15 09:45:16','%Y-%m-%d %H:%i:%S');
+
+%M 月名字(January……December)
+%W 星期名字(Sunday……Saturday)
+%D 有英语前缀的月份的日期(1st, 2nd, 3rd, 等等。）
+%Y 年, 数字, 4 位
+%y 年, 数字, 2 位
+%a 缩写的星期名字(Sun……Sat)
+%d 月份中的天数, 数字(00……31)
+%e 月份中的天数, 数字(0……31)
+%m 月, 数字(01……12)
+%c 月, 数字(1……12)
+%b 缩写的月份名字(Jan……Dec)
+%j 一年中的天数(001……366)
+%H 小时(00……23)
+%k 小时(0……23)
+%h 小时(01……12)
+%I 小时(01……12)
+%l 小时(1……12)
+%i 分钟, 数字(00……59)
+%r 时间,12 小时(hh:mm:ss [AP]M)
+%T 时间,24 小时(hh:mm:ss)
+%S 秒(00……59)
+%s 秒(00……59)
+%p AM或PM
+%w 一个星期中的天数(0=Sunday ……6=Saturday ）
+%U 星期(0……52), 这里星期天是星期的第一天
+%u 星期(0……52), 这里星期一是星期的第一天
+%% 一个文字“%”。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

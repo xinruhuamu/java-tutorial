@@ -1,0 +1,46 @@
+1.数据库连接url
+jdbc:mysql://localhost:3306/sakila_c?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT
+
+2.时区错误 java.sql.SQLException: The server time zone value '�й���׼ʱ��' is unrecognized or represents more than one time zone. You must configure either the server or JDBC driver
+解决：由于数据库和系统时区差异造成，可在url后添加serverTimezone=GMT.
+
+3.springboot进行单元测试时报错，Unable to find a @SpringBootConfiguration, you need to use @ContextConfiguration or @SpringBootTest(classes=...) with your test
+解决：需要保证Test和启动类Application在相同的模块下.
+
+4.springboot整合mybatis时，配置spring.datasource.druid.driver-class-name: com.mysql.cj.jdbc.Driver时，报错 java.lang.ClassNotFoundException: com.mysql.cj.jdbc.Dirver。
+解决：可删除此配置信息，不会影响数据库使用。
+
+5.mybatis调试过程中，打开控制台输出mysql执行语句的方法。
+类似：
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@59127611] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@38ef1a0a] will not be managed by Spring
+==>  Preparing: SELECT actor_id, first_name, last_name, DATE_FORMAT(last_update, '%Y-%m-%d %H:%i:%S') AS last_update FROM actor WHERE actor_id = ?;
+==> Parameters: 2(Integer)
+<==    Columns: actor_id, first_name, last_name, last_update
+<==        Row: 2, NICK, WAHLBERG, 2006-02-15 04:34:33
+<==      Total: 1
+解决：
+添加配置信息：
+   mybatis.configuration.log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+6.Mysql存取sql TIMESTAMP格式时间，在使用FastJson进行JSON转换时，会默认转换为时间戳，需要注意。
+例如：数据库中为2018-01-15 09:45:16，取出JSON转换后为1515980716。
+解决：在SELECT查询语句中使用函数 DATE_FORMAT(last_update, '%Y-%m-%d %H:%i:%S') AS last_update进行格式化，保证输出正确格式。
+
+7.使用mybatis-generator插件生成代码时，报错Caused by: java.lang.IllegalArgumentException: Result Maps collection already contains value for com.xrhm.modulegenerator.dao.AddressMapper.BaseResultMap
+这是因为mybatis-generator在生成mapper.xml映射文件时，会重复生成映射信息
+解决：删除多余重复信息即可。
+
+8.使用spring boot+mybatis时，调试信息中提示：
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@14efa279] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@153d6d74] will not be managed by Spring
+
+这是因为没有将事务管理交给spring管理。
+解决：配置TransactionManager，使用@Transactional管理sql操作。
+
+9.FastJson反序列类型转换错误。
+java.lang.ClassCastException: com.alibaba.fastjson.JSONObject cannot be cast to xxx.
+解决：这是FastJson库自有的bug，开发者还未修复，所以我更换了FastJson，使用spring boot自带的Jackson库。
+
+10.
