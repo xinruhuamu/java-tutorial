@@ -1,6 +1,6 @@
 package com.xrhm.javatutorial.学习.进阶.多线程JUC;
 
-import com.dcqc.javatutorial.学习.Util.ThreadPoolUtil;
+import com.xrhm.javatutorial.学习.Util.ThreadPoolUtil;
 import org.springframework.stereotype.Service;
 
 @Service

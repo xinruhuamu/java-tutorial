@@ -1,0 +1,19 @@
+1.监听器
+a.监听器用于监听Web应用中某些对象的创建、销毁、增加，修改，删除等动作的发生，然后作出相应的响应处理。当监听范围的对象的状态发生变化的时候，服务器自动调用监听器对象中的方法。
+常用于统计网站在线人数、系统加载时进行信息初始化、统计网站的访问量等等。
+
+b.按照监听的对象可以分为：
+    1.ServletContext对象的监听器 ServletContextListener
+    2.HttpSession对象的监听器 HttpSessionListener
+    3.ServletRequest对象的监听器 ServletRequestListener
+c.按照监听的事件可以分为：
+    1.对象自身的创建和销毁的监听器
+    2.对象中属性的创建、替换和删除的监听器
+    3.HttpSession中对象状态变化的监听器
+
+d.用途：
+    统计在线人数，HttpSessionListener
+    加载初始化信息，ServletContextListener
+    统计网站访问量
+    访问监控
+

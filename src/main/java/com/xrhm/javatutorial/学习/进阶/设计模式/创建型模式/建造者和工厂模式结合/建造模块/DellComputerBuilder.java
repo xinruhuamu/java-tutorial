@@ -1,7 +1,7 @@
 package com.xrhm.javatutorial.学习.进阶.设计模式.创建型模式.建造者和工厂模式结合.建造模块;
 
-import com.dcqc.javatutorial.学习.进阶.设计模式.创建型模式.建造者和工厂模式结合.产品类.Computer;
-import com.dcqc.javatutorial.学习.进阶.设计模式.创建型模式.建造者和工厂模式结合.产品类.DellComputer;
+import com.xrhm.javatutorial.学习.进阶.设计模式.创建型模式.建造者和工厂模式结合.产品类.Computer;
+import com.xrhm.javatutorial.学习.进阶.设计模式.创建型模式.建造者和工厂模式结合.产品类.DellComputer;
 
 /*
  * 具体建造类，负责组装电脑
