@@ -1,0 +1,19 @@
+1.JAVA安装及环境变量配置
+安装完成后，进行环境变量配置，默认JAVA安装路径为 C:\Program Files\Java
+环境变量配置:
+a.JAVA_HOME配置
+在系统变量中新建变量JAVA_HOME，变量值为JDK路径 C:\Program Files\Java\jdk1.8.0_211
+b.PATH配置
+在系统变量PATH中，编辑分别添加%JAVA_HOME%\bin和%JAVA_HOME%\jre\bin
+c.CLASSPATH配置（有说不用配置的）
+在系统变量中新建变量CLASSPATH,变量值为 .;%JAVA_HOME%\lib\dt.jar;%JAVA_HOME%\lib\tools.jar;
+
+2.MAVEN替换阿里源
+<mirror>
+  <id>alimaven</id>
+  <name>aliyun maven</name>
+  <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+  <mirrorOf>central</mirrorOf>
+</mirror>
+
+3.NODE.JS环境变量配置
