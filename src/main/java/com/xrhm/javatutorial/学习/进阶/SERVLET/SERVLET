@@ -1,0 +1,33 @@
+1.Servlet默认采用单例多线程的方式处理多个请求。
+“Deployment Descriptor”, controls how the servlet container provides instances of the servlet.For a servlet not hosted
+in a distributed environment (the default), the servlet container must use only one instanceper servlet declaration.
+However, for a servlet implementing the SingleThreadModel interface,the servlet container may instantiate multiple instances
+to handle a heavy request load and serialize requests to a particular instance.
+译：对于不托管的servlet在分布式环境中(默认)，servlet容器必须只使用一个instance per servlet声明。但是，对于实现SingleThreadModel接口的servlet,
+servlet容器可以实例化多个实例处理沉重的请求负载并将请求序列化到特定实例。
+
+2.验证Request、线程和会话Session之间的关系
+每一个Request请求会创建一个新线程执行，但是同一个客户端浏览器的不同请求会对应同一个Session
+
+3.HttpSession
+HttpSession 服务端的技术
+服务器会为每一个用户 创建一个独立的HttpSession
+
+HttpSession原理
+当用户第一次访问Servlet时,服务器端会给用户创建一个独立的Session
+并且生成一个SessionID,这个SessionID在响应浏览器的时候会被装进cookie中,从而被保存到浏览器中
+当用户再一次访问Servlet时,请求中会携带着cookie中的SessionID去访问
+服务器会根据这个SessionID去查看是否有对应的Session对象
+有就拿出来使用;没有就创建一个Session(相当于用户第一次访问)
+
+域的范围:
+    Context域 > Session域 > Request域
+    Session域 只要会话不结束就会存在 但是Session有默认的存活时间(30分钟)
+
+4.ServletContext
+和Servlet一样是单例的，
+
+4.前后端分离情况下发生Session不一样问题。
+原因：是因为跨域导致的每一次请求都会是不同的Session
+
+axios.defaults.withCredentials = true

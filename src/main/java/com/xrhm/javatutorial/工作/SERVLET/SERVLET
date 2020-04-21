@@ -1,5 +1,10 @@
 1.获取HttpServletRequest对象的方法
-a.如果存在ServletRequest，直接转换 HttpServletRequest request = (HttpServletRequest) servletRequest;
-b.如果使用Spring框架，直接注入 @Autowired private HttpServletRequest request;
-c.直接获取((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
+    a.如果存在ServletRequest，直接转换 HttpServletRequest request = (HttpServletRequest) servletRequest;
+    b.如果使用Spring框架，直接注入 @Autowired private HttpServletRequest request;
+    c.直接获取((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
+
+2.使用SPRING框架下的RequestContext时，注意需要保证SERVLET容器初始化完成才可以使用，否则报错，即不可在Listener和Filter中使用。
+报错信息：java.lang.IllegalStateException: No WebApplicationContext found: not in a DispatcherServlet request and no ContextLoaderListener registered?
+     	at org.springframework.web.servlet.support.RequestContext.<init>(RequestContext.java:219) ~[spring-webmvc-5.2.3.RELEASE.jar:5.2.3.RELEASE]
+     	at org.springframework.web.servlet.support.RequestContext.<init>(RequestContext.java:143) ~[spring-webmvc-5.2.3.RELEASE.jar:5.2.3.RELEASE]
 

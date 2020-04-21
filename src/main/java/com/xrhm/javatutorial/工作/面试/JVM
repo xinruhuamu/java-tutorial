@@ -1,0 +1,118 @@
+注：在JDK8下的知识。
+
+1.字节码 ByteCode
+一次编写，到处执行。
+在代码执行过程中，JVM将字节码解释执行，忽略对底层操作系统的依赖。
+
+JAVA所有指令有200个左右，一个字节（8位）可以存储256种不同指令，这样一个字节称为字节码。
+
+编写好的.java文件时源代码文件，机器不能直接执行，需要源码编译器将其编译为字节码文件.class文件甚至机器码文件。
+
+字节码.class文件必须通过类加载过程加载到JVM环境，才可以执行。
+
+2.JVM中类加载过程
+5个阶段：加载->验证->准备->解析->初始化
+
+字节码.class文件需要加载到内存中，才可以实例化。类加载是一个将.class字节码文件实例化成Class对象并进行相关初始化的过程，在此过程中，JVM会
+初始化继承树上还没有被初始化过的所有父类，并且会执行这个链路上所有未执行过的静态代码块、静态变量赋值语句等。某些类可以按需由类加载器加载。
+
+类加载器CLassLoader种类（JDK9之前）：按等级分为3个
+a.第一层，启动类加载器Bootstrap ClassLoader,在JVM启动时创建，时最根本的类加载器，负责装载最核心Java类，如Object、System、String等；
+b.第二层，扩展类加载器Extension ClassLoader，加载<JAVA_HOME>\lib\ext中类库，开发者可直接使用。
+c.第三层，用用类加载器Application ClassLoader，加载用户定义的CLASSPATH路径下的类。
+
+CLassLoader负责提前加载.class文件到内存中。在加载类时，使用Parent Delegation Model双亲委派模型。
+双亲委派模型：描述加载器之间层次关系，低层次的当前类加载器，不能覆盖高层次类加载器已经加载的类。
+            过程：如果一个类加载器收到了类加载的请求，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器去完成，每一个层次
+            的类加载器都是如此，因此所有的加载请求最终都应该传送到顶层的启动类加载器中，只有当父加载器反馈自己无法完成这个加载请求
+            （找不到所需的类）时，子加载器才会尝试自己去加载。
+            在 java.lang.ClassLoader 中的 loadClass() 方法中实现该过程。
+
+3.JVM内存布局（JDK8之后）
+按线程共享角度划分：
+    线程共享：堆heap和元数据区metaspace
+    线程私有：虚拟机栈JVM Stacks、本地方法栈Native Method Stacks、程序计数器Program Counter Register
+a.堆Heap  本地内存、线程共享 OOM
+    保存几乎所有实例对象和字符串常量，由垃圾收集器自动回收，且线程共享使用。占据最大内存区域，OOM故障主要发源地。
+    分为新生代（Eden区、两个Survivor区）和老年代。
+b.元数据区Metaspace  本地内存、线程共享 OOM
+    JDK8之前为Perm区，即永久代。
+    元数据区在本地内存分配，包括类元信息、字段、静态属性、方法、常量等，String显示在常量池中，实际对象保存在堆内存中。
+c.虚拟机栈JVM Stack  线程私有 SOE
+    栈时先进后出数据结构。JVM是基于栈结构的运行环境。JVM中虚拟机栈是描述Java方法执行的内存区域，线程私有。
+    在活动线程中，只有基于栈顶的帧才是有效的，成为当前栈帧。运行时，所有指令只能针对当前栈帧进行操作。
+    栈帧包括：局部变量表、操作栈、动态连接、方法返回地址。
+d.本地方法栈Native Method Stacks  线程私有 SOE
+
+f.程序计数器Program Counter Register 线程私有 不会发生OOM
+    一块较小的内存，是当前线程正在执行的字节码指令的地址。若当前线程正在执行的是一个本地方法，那么此时程序计数器为Undefined。
+
+4.对象实例化
+从执行步骤分析：
+    a.确认类元信息是否存在。
+    在Metaspace中检查需要创建的类元信息是否存在，若存在直接创建，若不存在，则通过类加载器加载，生成对应的Class类对象，找不到文件抛出
+    ClassNotFoundException异常。
+    b.分配对象内存。
+    在堆栈中分配引用变量空间，堆中分配内存。
+    c.设定默认值。
+    成员变量值设定默认值，即各种不同形式零值。
+    d.设置对象头。
+    设置新对象的哈希码、GC信息、锁信息、对象所属的类元信息等。
+    e.执行init方法。
+    初始化成员变量、执行实例化代码块、调用类的构造方法，并把堆内实例对象的首地址赋值给引用变量。
+
+5.垃圾回收
+
+
+6.常量池 JDK8
+a.class字节码文件常量池  Java编译期 类私有
+    在Class文件中除了类元信息、字段、静态属性、方法等信息外，还有一项信息是常量池（ConstantPool），用于存放编译期生成的各种字面量和
+    符号引用。
+    字面量：
+        字符串，String a = "str";str为字面量。
+        final修饰变量。
+    符号引用：
+        包括类和接口的全限定名，String类全限定名为java/lang/String；
+        字段的名称和描述符，字段指类或者接口中声明的变量，包括类变量static和实例变量；
+        方法的名称和描述符，方法的参数类型+返回值类型。
+b.JVM元数据区常量池（运行时常量池？？？） 线程共享
+    保存除字符串常量的其他常量。
+c.字符串常量池，保存在堆中
+
+
+7.字符串直接赋值和new String()的区别 JDK8字符串常量池保存的是String对象的引用
+a.字符串直接赋值，即字面量赋值
+    String a = "str";可能创建一个或者不创建String对象，如果值="str"的String对象引用（内存地址）在字符串常量池中不存在，会在字符串常量池中创建一个String对象，返回对象引用；
+    如果值="str"的String对象引用在字符串常量池中存在，则直接从常量池中引用对象；始终只有一个内存地址分配（同一个对象）,==比较内存地址是否同一个对象。
+    String a = "str";
+    String b = "str";
+    String c = "str";
+
+    public void doCompare() {
+        System.out.println(a == b);//true
+        System.out.println(a == c);//true
+        System.out.println(b == c);//true
+    }
+b.new String()创建字符串
+    String a = new String("str");创建两个String对象；首先new String()一定在堆上Heap创建一个String对象；然后在字符串常量池中创建一个该String对象的
+    引用，保存该String对象内存地址。
+    String a = "str";
+    String b = new String("str");
+
+    public void doCompare() {
+        System.out.println(a == b);//false,a和b指向不同的内存地址。
+    }
+c.intern方法
+    如果字符串常量池中包含一个和此String对象值相同的字符串（equals判断）引用,则返回此String对象引用内存地址。
+    String a = "str";//创建一个String对象
+    String b = new String("str");//
+    String c = b.intern();//不创建String对象和a相同
+
+    public void doCompare() {
+        System.out.println(a == b);//false
+        System.out.println(a == c);//true
+        System.out.println(b == c);//false
+    }
+
+
+

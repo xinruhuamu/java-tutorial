@@ -1,0 +1,3 @@
+1.Web中，Request请求路径与自定义Controller方法不匹配出现异常时，拦截器中preHandle、postHandle等会执行两次。
+原因：DispatcherServlet前端控制器通过HandlerMapping进行操作时，如果自定义Controller中找不到对应方法，会跳转至BasicErrorController进行处理，
+DispatcherServlet会默认跳转/error路径，导致Request请求被二次拦截，执行第二次拦截器preHandle、postHandle。

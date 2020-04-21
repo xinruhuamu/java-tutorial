@@ -22,3 +22,7 @@
     ④、过滤器不能访问action上下文、值栈里的对象，拦截器可以。
     ⑤、在action声明周期内，过滤器只在容器初始化时被调用一次，拦截器可以多次被调用。
     ⑥、过滤器不能获取IOC容器中的bean，拦截器可以，所以，在拦截器中注入一个service可以调用业务逻辑。
+
+Filter使用方法：
+a.实现Filter接口javax.servlet.Filter;
+b.继承SPRING框架org.springframework.web.filter.OncePerRequestFilter;

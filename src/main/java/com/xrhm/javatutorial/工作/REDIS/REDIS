@@ -1,0 +1,42 @@
+1.关于手动存取REDIS中缓存RedisConnectionFactory的配置问题
+和使用@Cacheable在yml文件中配置不同，需要手动配置，不然会出现Redis连接工厂空指针异常。
+
+public class RedisTemplateCreator<T> {
+    public RedisConnectionFactory redisConnectionFactory() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+        config.setDatabase(0);
+        config.setHostName("127.0.0.1");
+        config.setPassword("");
+        config.setPort(6379);
+
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(config);
+        factory.afterPropertiesSet();
+
+        return factory;
+    }
+
+    public RedisTemplate<String, T> redisTemplate() {
+        RedisTemplate<String, T> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(this.redisConnectionFactory());
+        //使用jacksonRedisSerializer替换默认序列化
+        GenericJackson2JsonRedisSerializer redisSerializer = new GenericJackson2JsonRedisSerializer();
+        //设置键key的序列化采用StringRedisSerializer
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        //设置值value的序列化采用jacksonRedisSerializer
+        redisTemplate.setValueSerializer(redisSerializer);
+
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(redisSerializer);
+
+        redisTemplate.afterPropertiesSet();
+
+        return redisTemplate;
+    }
+
+    public StringRedisTemplate stringRedisTemplate() {
+        StringRedisTemplate stringRedisTemplate = new StringRedisTemplate();
+        stringRedisTemplate.setConnectionFactory(this.redisConnectionFactory());
+
+        return stringRedisTemplate;
+    }
+}

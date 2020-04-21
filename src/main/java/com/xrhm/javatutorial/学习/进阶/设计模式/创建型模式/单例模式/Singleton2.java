@@ -5,7 +5,7 @@ package com.xrhm.javatutorial.学习.进阶.设计模式.创建型模式.单例�
  *
  * */
 public class Singleton2 {
-    //volatile保证当uniqueInstance变量初始化成Singleton2实例时，多个线程可正确处理uniqueInstance变量
+    //volatile 在此是禁止指令重排的作用, 保证先初始化, 再把对象引用赋值给instance变量
     private volatile static Singleton2 uniqueInstance = null;
 
     private Singleton2() {

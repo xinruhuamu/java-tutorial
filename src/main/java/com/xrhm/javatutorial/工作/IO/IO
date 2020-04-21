@@ -8,4 +8,42 @@
 使用字节流写入中文文本时，会出现乱码现象，这是因为使用字节流处理中文时，可能出现缓存区开头或结尾恰好将一个中文字符的字节码分割，导致一个中文字符的字节码被分到不同的缓存区，导致首尾乱码。
 解决：使用字符流处理中文文本写入。
 
-4.
+4.使用IO进行流处理时，Stream、Channel、Reader等的关闭问题
+示例代码：
+    public String getBody(){
+        StringBuilder stringBuilder = new StringBuilder();
+        BufferedReader bufferedReader = null;
+
+        try {
+            bufferedReader = this.getHttpServletRequest().getReader();//此处缓存读取不是自己实例化创建的，生命周期会由容器管理，所以不需要在finally里手动进行关闭
+            char[] bodyCharBuffer = new char[1024];
+            int len = 0;
+            while ((len = bufferedReader.read(bodyCharBuffer)) != -1) {
+                stringBuilder.append(new String(bodyCharBuffer, 0, len));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+解决方法：IO中不是自己new实例化创建的Stream、Reader等，不需要在finally中手动关闭，会由容器管理生命周期进行关闭。
+
+5.使用Writer向Response写入JSON对象数据
+    public void writeResponseBody(Object o) {
+        HttpServletResponse response = this.getHttpServletResponse();
+        try {
+            String jsonStringValue = JSON.toJSONString(o);
+            response.getWriter().write(jsonStringValue);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }

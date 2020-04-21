@@ -21,7 +21,7 @@ import java.util.Objects;
  * @description TODO
  * @date 2020/2/21 22:04
  */
-@WebFilter
+
 public class DemoWebFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(DemoWebFilter.class);
     @Autowired
@@ -37,6 +37,8 @@ public class DemoWebFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         String body = request.getRequestURI();
         // do something doFilter()之前可以对request进行操作
+        System.out.println(Thread.currentThread().getId());
+        System.out.println(request.getSession().getId());
         //如需对response进行操作，可在此先创建HttpServletResponseWrapper的实现类对象
 
         //执行过滤器链，进行Servlet容器初始化，Servlet的doService()是在chain.doFilter()方法中执行的；对response操作，doFilter 的response参数需要是HttpServletResponseWrapper的实现类对象。

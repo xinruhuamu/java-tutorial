@@ -1,0 +1,82 @@
+1.二叉树Binary Tree
+每个节点最多2个子节点，左节点、右节点。
+满二叉树、
+完全二叉树：只有最后一层叶子节点数目未满，且叶子节点都靠左排列。
+
+存储一棵二叉树有两种方法：
+a.链式存储法，大部分二叉树实现方法。
+
+b.顺序存储法，完全二叉树实现方法。
+基于数组。
+
+2.二叉搜索树(二叉查找树)Binary Search Tree
+时间复杂度O(logN)。
+特点：左子节点小于父节点、右子节点大于父节点。
+
+二叉搜索树的查找：
+public class SearchBstree {
+    private Node tree;
+
+    public Node find(int data){
+        Node p = tree;
+
+        while(p !=null){
+            if(data<p.data) p = p.left;
+            else if(data>p.data) p = p.right;
+            else return p;
+        }
+        return null;
+    }
+
+
+    public void insert(int data) {
+        if (tree == null) {
+            tree = new Node(data);
+            return;
+        }
+
+        Node p = tree;
+        while (p != null) {
+            if (data > p.data) {
+                if (p.right == null) {
+                    p.right = new Node(data);
+                    return;
+                }
+                p = p.right;
+            } else { // data < p.data
+                if (p.left == null) {
+                    p.left = new Node(data);
+                    return;
+                }
+                p = p.left;
+            }
+        }
+    }
+
+    public static class Node{
+        private int data;
+        private Node left;
+        private Node right;
+
+        public Node (int data){
+            this.data = data;
+        }
+    }
+}
+
+3.B-树（Balance Tree）B-和B+树可以参考“程序员小灰 B-和B+的介绍”
+B-树主要用于文件系统及部分数据库索引，比如非关系型数据库MongoDB;而大多关系型数据库，比如Mysql使用B+树作为索引。
+
+4.B+树
+B+树的特征：
+1.有k个子树的中间节点包含有k个元素（B树中是k-1个元素），每个元素不保存数据，只用来索引，所有数据都保存在叶子节点。
+2.所有的叶子结点中包含了全部元素的信息，及指向含这些元素记录的指针，且叶子结点本身依关键字的大小自小而大顺序链接。
+3.所有的中间节点元素都同时存在于子节点，在子节点元素中是最大（或最小）元素。
+
+B+树的优势：
+1.单一节点存储更多的元素，使得查询的IO次数更少。
+2.所有查询都要查找到叶子节点，查询性能稳定。
+3.所有叶子节点形成有序链表，便于范围查询。
+
+相比B-树优势：
+    a.硬盘IO次数更少；b.查询性能稳定；c.范围查询简单

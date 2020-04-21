@@ -4,6 +4,24 @@ EXPLAIN命令，分析SELECT语句。
 EXPLAIN... + SHOW WRANINGS...组合对SELECT语句进行分析。
 记得关闭MYSQL的缓存功能query_cache_type = OFF。
 
+建表
+CREATE TABLE IF NOT EXISTS `user`
+(
+    `id`           INT          NOT NULL AUTO_INCREMENT COMMENT '用户id，自增，步长1',
+    `username`     VARCHAR(128) NOT NULL COMMENT '用户名username',
+    `password`     VARCHAR(128) NOT NULL COMMENT '用户密码',
+    `nickname`     VARCHAR(128) NOT NULL COMMENT '昵称',
+    `sex`          TINYINT      NOT NULL COMMENT '性别，0为女性，1为男性',
+    `phone`        VARCHAR(128) NOT NULL COMMENT '手机号码',
+    `email`        VARCHAR(128) NOT NULL COMMENT '电子邮箱地址',
+    `grade`        VARCHAR(32)  NOT NULL COMMENT '会员级别，青铜、白银。。。',
+    `level`        VARCHAR(32)  NOT NULL COMMENT '用户等级',
+    `avator_url`   VARCHAR(255) COMMENT '头像url',
+    `gmt_create`   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '字段创建时间',
+    `gmt_modified` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '字段更新时间',
+    primary key (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 1.C，Create增加，添加
 insert into 表名(列名1,列名2...) value(值1,值2...);
 如果对表中的所有列添加数据，列名可省略，即insert into 表名 values(值1,值2...);
@@ -34,7 +52,7 @@ select 列名1,列名2... from 表名; // 基础查询语句 select * from film
         通常可以在GROUP BY之后添加HAVING +函数，对分组后的结果集B再进行筛选获得结果集C。
         SELECT rental_duration,count(rental_duration),rating,count(rating) FROM film GROUP BY rental_duration,rating HAVING  ;
 
-    c.ORDER BY...ASC|DESC  根据指定列对结果集进行升序/降序排序
+    c.ORDER BY...ASC|DESC  根据指定列对结果集进行升序/降序排序,默认升序ASC
     语法：SELECT 列名 FROM 表名 WHERE...ORDER BY 列名 ASC|DESC;
         SELECT * FROM film WHERE rating = 'PG' ORDER BY rental_rate ASC; //
 
@@ -249,7 +267,7 @@ a.各列的含义
         Using filesort：
         当 Extra 中有 Using filesort 时, 表示 MySQL 需额外的排序操作, 不能通过索引顺序达到排序效果. 一般有 Using filesort, 都建议优化去掉, 因为这样的查询 CPU 资源消耗大.
         Using index
-        "覆盖索引扫描", 表示查询在索引树中就可查找所需数据, 不用扫描表数据文件, 往往说明性能不错
+        "覆盖索引扫描",即索引覆盖 表示查询在索引树中就可查找所需数据, 不用扫描表数据文件, 往往说明性能不错
         Using temporary
         查询有使用临时表, 一般出现于排序, 分组和多表 join 的情况, 查询效率不高, 建议优化.
 
@@ -297,6 +315,9 @@ a.各列的含义
 %u 星期(0……52), 这里星期一是星期的第一天
 %% 一个文字“%”。
 
+10.字段创建时间和更新时间
+    `gmt_create`   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '字段创建时间',
+    `gmt_modified` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '字段更新时间',
 
 
 

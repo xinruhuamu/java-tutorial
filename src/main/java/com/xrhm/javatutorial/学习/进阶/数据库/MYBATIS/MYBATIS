@@ -126,6 +126,9 @@
 添加配置信息：
 mybatis.configuration.log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+3.MYBATIS中类的执行顺序
+Executor->StatementHandler->ParameterHandler->ResultSetHandler
+
 
 
 

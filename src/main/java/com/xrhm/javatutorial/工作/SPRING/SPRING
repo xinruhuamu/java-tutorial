@@ -1,0 +1,87 @@
+1.SPRING拦截器注入bean的方法
+@Configuration
+public class WebInterceptorConfig implements WebMvcConfigurer {
+    /**
+     * 为了解决拦截器无法注入bean，先在配置中实例化LoginInterceptor
+     *
+     * @return
+     */
+    @Bean(name = "loginInterceptor")
+    public LoginInterceptor loginInterceptor() {
+        return new LoginInterceptor();
+    }
+
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(loginInterceptor());//然后在这里直接使用注入的bean，不用再new，就可以@Autowired了
+    }
+}
+
+2.SPRING SECURITY自定义过滤器运行出错java.lang.NullPointerException: null
+java.lang.NullPointerException: null
+	at com.xrhm.moduledb.security.filter.CustomAuthenticationFilter.attemptAuthentication(CustomAuthenticationFilter.java:43) ~[classes/:na]
+    出错位置：return this.getAuthenticationManager().authenticate(authRequest);
+代码：
+public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomAuthenticationFilter.class);
+
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+        System.out.println("进入CustomFilter");
+        //当Content-Type是Json时
+        if (request.getContentType().equals(MediaType.APPLICATION_JSON_VALUE)) {
+            //jackJson反序列化json数据
+            UsernamePasswordAuthenticationToken authRequest = null;
+            try (InputStream inputStream = request.getInputStream()) {
+                LoginAuthenticationBean bean = JSON.parseObject(inputStream, LoginAuthenticationBean.class);
+                System.out.println(JSON.toJSONString(bean));
+                authRequest = new UsernamePasswordAuthenticationToken(bean.getUsername(), bean.getPassword());
+            } catch (IOException e) {
+                e.printStackTrace();
+                LOGGER.warn("找不到登录用户信息！");
+                authRequest = new UsernamePasswordAuthenticationToken("", "");
+            }
+            setDetails(request, authRequest);
+            return this.getAuthenticationManager().authenticate(authRequest);
+        } else {
+            return super.attemptAuthentication(request, response);
+        }
+    }
+}
+原因：AuthenticationManager为空，需要在配置中设置AuthenticationManager。
+在SecurityConfig配置中不可直接new CustomAuthenticationFilter：
+    protected void configure(HttpSecurity http) throws Exception {
+        super.configure(http);
+        http.addFilterAt(new CustomAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .formLogin().loginPage("/login")
+                .and()
+                .csrf().disable()
+                .cors();
+    }
+需要配置
+@Configuration
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        super.configure(http);
+        http.addFilterAt(customAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .formLogin().loginPage("/login")
+                .and()
+                .csrf().disable()
+                .cors();
+    }
+
+    @Bean
+    CustomAuthenticationFilter customAuthenticationFilter() throws Exception {
+        CustomAuthenticationFilter filter = new CustomAuthenticationFilter();
+        filter.setAuthenticationManager(authenticationManagerBean());
+
+        return filter;
+    }
+}
+
+3.SPRING SECURITY认证流程（自己总结的）
+Filter->AuthenticationManager.authenticate->SuccessHandler或者FailureHandler。
+
+4.SPRING BEAN的初始化过程（生命周期）

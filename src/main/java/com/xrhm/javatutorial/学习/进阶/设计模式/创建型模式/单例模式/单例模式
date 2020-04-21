@@ -14,3 +14,5 @@ instance成员变量和uniqueInstance方法必须是static。
 懒汉式（非线程安全和synchronized关键字线程安全版本)
 懒汉式(双重检查加锁版本)
 懒汉式（登记式/静态内部类方式）
+
+1.Java中单例设计模式和Spring单例Singleton的区别

@@ -55,7 +55,6 @@ c.getFields
 d.getDeclaredFields
 获取所有已声明的类成员，包括私有属性，数组存储
 
-
 例子，获取对象的私有类成员，包括类常量
 Field[] fields = clazz.getDeclaredFields(); //获取所有类成员
 fields.setAccessible(True);//解除私有变量访问权限，将对象的私有属性和方法设置为允许访问
