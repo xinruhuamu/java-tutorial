@@ -1,0 +1,34 @@
+主要类和接口：
+事件发布者、事件源、事件监听器
+ApplicationEventPublisherAware
+ApplicationEventPublisher
+ApplicationListener
+ApplicationEvent
+
+示例：用户注册成功后，向用户发送邮件。
+
+使用这里面的方法会报错Exception in thread "main" java.lang.NullPointerException，applicationEventPublisher为null，
+因为需要
+        @Autowired
+        private UserService userService;
+    注入UserService，就可以解决。
+
+
+2.启用异步事件
+//1.配置此类之后，事件自动启用异步线程
+@Configuration
+public class AsyncEventConfig {
+    @Bean(name = "applicationEventMulticaster")
+    public ApplicationEventMulticaster simpleApplicationEventMulticaster() {
+        SimpleApplicationEventMulticaster eventMulticaster
+                = new SimpleApplicationEventMulticaster();
+
+        eventMulticaster.setTaskExecutor(new SimpleAsyncTaskExecutor());
+        return eventMulticaster;
+    }
+}
+
+//2.lambda新建匿名现场类
+new Thread(() ->{
+            applicationContext.publishEvent(new LendSuccesssEvent(this));
+        }).start();

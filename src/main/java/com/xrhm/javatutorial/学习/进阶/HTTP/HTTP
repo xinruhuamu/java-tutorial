@@ -1,1 +1,9 @@
 https://zhuanlan.zhihu.com/p/60450391
+https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol
+1.HTTP
+Hypertext Transfer Protocol 超文本传输协议
+
+2.关于HTTP请求路径方面的知识
+getRequestURL()
+getRequestURI()
+getContextPath()

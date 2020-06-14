@@ -11,7 +11,7 @@ servlet容器可以实例化多个实例处理沉重的请求负载并将请求�
 
 3.HttpSession
 HttpSession 服务端的技术
-服务器会为每一个用户 创建一个独立的HttpSession
+服务器会为每一个用户 创建一个独立的HttpSession7
 
 HttpSession原理
 当用户第一次访问Servlet时,服务器端会给用户创建一个独立的Session
@@ -27,7 +27,7 @@ HttpSession原理
 4.ServletContext
 和Servlet一样是单例的，
 
-4.前后端分离情况下发生Session不一样问题。
+5.前后端分离情况下发生Session不一样问题。
 原因：是因为跨域导致的每一次请求都会是不同的Session
 
 axios.defaults.withCredentials = true

@@ -1,0 +1,13 @@
+场景：在设计security时，希望对HttpServlet进行功能扩展,添加getRequestBody()方法，使用装饰模式进行。
+
+定义：Attach additional responsibilities to an object dynamically keeping the same interface.Decorators provide a flexible
+alternative to subclassing for extending functionality.（动态地给一个对象添加一些额外的职责。就增加功能来说，装饰模式相比生成子类更为灵活。）
+
+装饰模式结构，4个角色：
+a.Component(抽象构件)，它是具体构件和抽象装饰类的共同父类，声明了具体构建中实现的业务方法。
+b.
+c.
+d.
+
+示例：在墙上贴上墙纸
+

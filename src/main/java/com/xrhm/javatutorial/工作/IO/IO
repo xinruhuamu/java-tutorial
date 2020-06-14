@@ -1,8 +1,11 @@
-1.使用BufferReader获取Request中body的内容时，使用form-data出现 java.lang.IllegalStateException: getInputStream() has already been called for this request ，错误码：500
+1.使用BufferReader获取Request中body的内容时，使用form-data出现
+java.lang.IllegalStateException: getInputStream() has already been called for this request ，
+java.lang.IllegalStateException: getReader() has already been called for this request。
 现象：body中传输json不会报错；如果传输form-data格式时，报错。
 
 2.request.getInputStream(); request.getReader();和request.getParameter("key");
 这三个函数中任何一个函数执行一次后（可正常读取body数据），便会失效，之后再执行就无效了。
+
 
 3.使用NIO、FileOutputStream、Channel写入中文文本问题
 使用字节流写入中文文本时，会出现乱码现象，这是因为使用字节流处理中文时，可能出现缓存区开头或结尾恰好将一个中文字符的字节码分割，导致一个中文字符的字节码被分到不同的缓存区，导致首尾乱码。
@@ -36,6 +39,16 @@
     }
 
 解决方法：IO中不是自己new实例化创建的Stream、Reader等，不需要在finally中手动关闭，会由容器管理生命周期进行关闭。
+删除以下代码
+    finally {
+                if (bufferedReader != null) {
+                    try {
+                        bufferedReader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
 5.使用Writer向Response写入JSON对象数据
     public void writeResponseBody(Object o) {
@@ -47,3 +60,16 @@
             e.printStackTrace();
         }
     }
+
+6.使用fastjson直接读取InputStream
+https://github.com/alibaba/fastjson/wiki/JSON_parseObject_InputStream_cn
+
+    import com.alibaba.fastjson;
+    import java.nio.charset.Charset;
+    class Model {
+        public int value;
+    }
+
+    InputStream is = ...
+    Model model = JSON.parseObject(is, Model.class);
+    Model model2 = JSON.parseObject(is, Charset.from("UTF-8"), Model.class);
