@@ -17,3 +17,13 @@ c.CLASSPATH配置（有说不用配置的）
 </mirror>
 
 3.NODE.JS环境变量配置
+a.在安装根目录下新建文件夹node_global和node_cache。(因为以后在执行类似：npm install express [-g] （后面的可选参数-g，g代表global全局安装的意思）的安装语句时，会将安装的模块安装到【C:\Users\用户名\AppData\Roaming\npm】路径中，占C盘空间。)
+b.打开cmd，输入如下命令更新配置：npm config set prefix "L:\Program Files\nodejs\node_global"和npm config set cache "L:\Program Files\nodejs\node_cache"
+c.环境变量配置
+NODE_PATH配置：在系统变量下新建NODE_PATH，值为L:\Program Files\nodejs\node_modules
+Path配置：在用户变量下编辑Path变量：C:\Users\用户名\AppData\Roaming\npm修改为L:\Program Files\nodejs\node_global
+d.修改淘宝镜像
+npm config set registry https://registry.npm.taobao.org
+npm config get registry
+
+4.
