@@ -1,4 +1,5 @@
 1.JAVA安装及环境变量配置
+JAVA历史版本下载网址：https://www.oracle.com/java/technologies/oracle-java-archive-downloads.html  8u202为最后一个免费版本。
 安装完成后，进行环境变量配置，默认JAVA安装路径为 C:\Program Files\Java
 环境变量配置:
 a.JAVA_HOME配置
