@@ -27,4 +27,12 @@ d.修改淘宝镜像
 npm config set registry https://registry.npm.taobao.org
 npm config get registry
 
-4.
+4.GIT用户信息配置
+查看用户名和邮箱：
+git config user.name
+git config user.email
+
+配置用户名和邮箱：
+git config --global user.name "xinruhuamu"
+git config --global user.email "xinruhuamu@qq.com"
+
